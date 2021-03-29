@@ -84,13 +84,6 @@ def api_search_documents(api_version):
                 "number_of_fragments": 100,
                 "options": {"return_offsets": True}
             },
-            "docvalue_fields": [
-                {
-                    "field": "year",
-                    "format": "yyyy"
-                }
-            ],
-            "_source": False,
             "aggregations": {
 
             },
@@ -164,15 +157,17 @@ def api_search_documents(api_version):
             # perform the search
             search_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=body)
 
-            results = [
-                {
+            results = []
+            for h in search_result['hits']['hits']:
+                fields = h.get('_source')
+                fields.pop("content")
+                results.append({
                     "id": h['_id'],
                     "score": h['_score'],
-                    "fields": h['fields'],
-                    "highlight": h['highlight']
-                }
-                for h in search_result['hits']['hits']
-            ]
+                    "fields": fields,
+                    "highlight": h.get('highlight')
+                })
+
             count = search_result['hits']['total']
 
             # print(body, len(results), search['hits']['total'], index)

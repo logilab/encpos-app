@@ -27,4 +27,6 @@ def create_app(config_name="dev"):
         from app.search import api_search_documents
         app.register_blueprint(api_bp)
 
+    config[config_name].init_app(app)
+
     return app

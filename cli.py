@@ -124,12 +124,28 @@ def make_cli():
         """
         Rebuild the elasticsearch indexes
         """
+
+        # BUILD THE METADATA DICT FROM THE GITHUB TSV FILE
         response = requests.get(app.config['METADATA_FILE_URL'])
-        id_list = []
+        metadata = {}
         lines = response.text.splitlines()
-        lines.pop(0)
+        header = lines.pop(0).split('\t')
         for line in lines:
-            id_list.append(line.split('\t', 1)[0])
+            _d = {}
+            # replace empty strings with null values
+            _values = [v if v != "" else None for v in line.split('\t')]
+            for i, k in enumerate(header):
+                # filter indexable columns
+                if k in app.config['METADATA_FILE_INDEXABLE_COLUMNS']:
+                    # brutally try to cast values as integer
+                    try:
+                        _d[k] = int(_values[i])
+                    except Exception as e:
+                        _d[k] = _values[i]
+
+            metadata[_d['id']] = _d
+            # remove id from nested metadata object
+            metadata[_d['id']].pop("id")
 
         _DTS_URL = app.config['DTS_URL']
 
@@ -141,12 +157,13 @@ def make_cli():
             start_year, end_year = (int(y) for y in years.split('-'))
             for year in range(start_year, end_year+1):
 
-                _ids = [encpos_id for encpos_id in id_list if str(year) in encpos_id]
+                _ids = [d for d in metadata.keys() if str(year) in d]
                 print(year, _ids)
-                for encpos_id in [i for i in id_list if str(year) in i]:
+                for encpos_id in _ids:
                     response = requests.get(f'{_DTS_URL}/document?id={encpos_id}')
                     # very ugly and wrong and temporary : indexing the whole TEI file
 
+                    #title_text	author_name	author_firstname topic_notBefore topic_notAfter author_gender
                     content = extract_body(response.text)
                     content = remove_html_tags(content)
 
@@ -156,7 +173,7 @@ def make_cli():
                         id=encpos_id,
                         body={
                             "content": content,
-                            "year": year
+                            "metadata": metadata[encpos_id]
                         })
 
         except Exception as e:

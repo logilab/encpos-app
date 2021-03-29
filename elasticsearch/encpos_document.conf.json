@@ -7,9 +7,13 @@
           "analyzer": "folding",
           "term_vector": "with_positions_offsets"
         },
-        "year" : {
-          "type": "date",
-          "format": "year"
+        "metadata": {
+          "properties": {
+            "promotion_year": {
+              "type": "date",
+              "format": "year"
+            }
+          }
         }
       }
     }
