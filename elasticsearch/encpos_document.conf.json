@@ -1,0 +1,17 @@
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "content": {
+          "type": "text",
+          "analyzer": "folding",
+          "term_vector": "with_positions_offsets"
+        },
+        "year" : {
+          "type": "date",
+          "format": "year"
+        }
+      }
+    }
+  }
+}
