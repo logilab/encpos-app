@@ -8,6 +8,7 @@ from app import api_bp
 
 def parse_range_parameter():
     _range = None
+    _parsed_ranges = []
     for f in request.args.keys():
         if f.startswith('range[') and f.endswith(']'):
             key, ops = (f[len('range['):-1], [op.split(':') for op in request.args[f].split(",")])
@@ -15,7 +16,8 @@ def parse_range_parameter():
             _range = {key: {}}
             for op, value in ops:
                 _range[key][op] = value
-            return _range
+            _parsed_ranges.append(_range)
+    return _parsed_ranges
 
 @api_bp.route('/api/<api_version>/search')
 def api_search_documents(api_version):
@@ -25,7 +27,7 @@ def api_search_documents(api_version):
     query = request.args.get("query", None)
 
     # eg. range[year]=gte:1871,lte:1899
-    range = parse_range_parameter()
+    ranges = parse_range_parameter()
 
     groupby = request.args.get("groupby[field]", None)
     after = request.args.get("page[after]", None)
@@ -93,8 +95,8 @@ def api_search_documents(api_version):
             ]
         }
 
-        if range is not None:
-            body["query"]["bool"]["must"].append({"range": range})
+        if ranges:
+            body["query"]["bool"]['must'].extend([{"range": r} for r in ranges])
 
         if groupby is not None:
             body["aggregations"] = {
@@ -161,6 +163,7 @@ def api_search_documents(api_version):
             for h in search_result['hits']['hits']:
                 fields = h.get('_source')
                 fields.pop("content")
+                fields['dts_url'] = f"{current_app.config['DTS_URL']}/document?id={h['_id']}"
                 results.append({
                     "id": h['_id'],
                     "score": h['_score'],
