@@ -24,7 +24,24 @@ def create_app(config_name="dev"):
     app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) if app.config['ELASTICSEARCH_URL'] else None
 
     with app.app_context():
-        from app.search import api_search_documents
+        from api.search import register_search_endpoint
+
+        def compose_result(search_result):
+            results = []
+            for h in search_result['hits']['hits']:
+                fields = h.get('_source')
+                fields.pop("content")
+                fields['dts_url'] = f"{app.config['DTS_URL']}/document?id={h['_id']}"
+                results.append({
+                    "id": h['_id'],
+                    "score": h['_score'],
+                    "fields": fields,
+                    "highlight": h.get('highlight')
+                })
+            return results
+
+        register_search_endpoint(api_bp, "1.0", compose_result)
+
         app.register_blueprint(api_bp)
 
     config[config_name].init_app(app)

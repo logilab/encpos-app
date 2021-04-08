@@ -4,7 +4,7 @@ import requests
 import click
 import json
 
-from app import create_app
+from api import create_app
 
 app = None
 clean_tags = re.compile('<.*?>')
