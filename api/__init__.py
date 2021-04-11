@@ -26,7 +26,7 @@ def create_app(config_name="dev"):
     with app.app_context():
         from api.search import register_search_endpoint
 
-        def compose_result(search_result):
+        def compose_result(search_result) -> list[dict]:
             results = []
             for h in search_result['hits']['hits']:
                 fields = h.get('_source')

@@ -1,9 +1,7 @@
-
 import os
 
-import requests
-
 basedir = os.path.abspath(os.path.dirname(__file__))
+
 
 def parse_var_env(var_name):
     v = os.environ.get(var_name)
@@ -36,10 +34,11 @@ class Config(object):
     def init_app(app):
         pass
 
-class DevelopmentConfig(Config):
 
+class DevelopmentConfig(Config):
     ENV = 'development'
     DEBUG = True
+
 
 config = {
     "dev": DevelopmentConfig,

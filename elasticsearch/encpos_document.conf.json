@@ -9,9 +9,13 @@
         },
         "metadata": {
           "properties": {
-            "promotion_year": {
-              "type": "date",
-              "format": "year"
+            "author_firstname": {
+              "type": "text",
+              "fielddata": true
+            },
+            "author_name": {
+              "type": "text",
+              "fielddata": true
             }
           }
         }

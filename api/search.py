@@ -1,10 +1,8 @@
 import json
 import pprint
 import time
-
-from flask import app, Response, request, current_app
-
-from api import api_bp
+from typing import Callable
+from flask import Response, request, current_app
 
 
 def parse_range_parameter():
@@ -21,19 +19,18 @@ def parse_range_parameter():
     return _parsed_ranges
 
 
-def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: []):
-
+def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callable[[str], list] = lambda s: []):
     def api_search_endpoint():
-        start_time = time.time()
+        start_time: float = time.time()
         # PARAMETERS
-        index = request.args.get("index", None)
-        query = request.args.get("query", None)
+        index: str = request.args.get("index", None)
+        query: str = request.args.get("query", None)
 
         # eg. range[year]=gte:1871,lte:1899
-        ranges = parse_range_parameter()
+        ranges: list[dict] = parse_range_parameter()
 
-        groupby_field = request.args.get("groupby[field]", None)
-        groupby_after = request.args.get("groupby[after-page]", None)
+        groupby_field: str = request.args.get("groupby[field]", None)
+        groupby_after: str = request.args.get("groupby[after-page]", None)
 
         if query is None:
             return Response(status=400)
@@ -52,7 +49,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
 
         # Search, retrieve, filter, sort and paginate objs
         # eg. &sort=-year
-        sort_criteriae = None
+        sort_criteriae: list[dict] = []
         if "sort" in request.args:
             sort_criteriae = []
             for criteria in request.args["sort"].split(','):
@@ -64,9 +61,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
                 # criteria = criteria.replace("-", "_")
                 sort_criteriae.append({criteria: {"order": sort_order}})
 
-        # def query_index(index, query, range=None, groupby=None, sort_criteriae=None, page=None, page_size=None, after=None):
-        if sort_criteriae is None:
-            sort_criteriae = []
+        r = {}
         if hasattr(current_app, 'elasticsearch'):
             body = {
                 "query": {
@@ -107,7 +102,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
                         "composite": {
                             "sources": [
                                 {
-                                    "item": {
+                                    groupby_field: {
                                         "terms": {
                                             "field": groupby_field,
                                         },
@@ -115,11 +110,16 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
                                 },
                             ],
                             "size": page_size
+                        },
+                    },
+                    "total_count": {
+                        "cardinality": {
+                            "field": "_id"
                         }
                     },
-                    "type_count": {
+                    "bucket_count": {
                         "cardinality": {
-                            "field": "year"
+                            "field": groupby_field
                         }
                     }
                 }
@@ -144,17 +144,16 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
                     print(sources_keys, groupby_after,
                           {key: value for key, value in zip(sources_keys, groupby_after.split(','))})
 
-            if page_size is not None:
-                if num_page is None or groupby_field is not None:
-                    page = 0
-                else:
-                    page = num_page - 1  # is it correct ?
-                body["from"] = page * page_size
-                body["size"] = page_size
-            else:
-                body["from"] = 0 * page_size
-                body["size"] = page_size
-                # print("WARNING: /!\ for debug purposes the query size is limited to", body["size"])
+            # if page_size is not None:
+            # if groupby_field is not None:
+            page: int = 0 if groupby_field is not None else num_page - 1
+
+            body["from"]: int = page * page_size
+            body["size"]: int = page_size
+            # else:
+            #    body["from"] = 0 * page_size
+            #    body["size"] = page_size
+            # print("WARNING: /!\ for debug purposes the query size is limited to", body["size"])
             try:
                 if index is None or len(index) == 0:
                     index = current_app.config["DOCUMENT_INDEX"]
@@ -163,9 +162,8 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
                 # perform the search
                 search_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=body)
 
-                # TODO: specific to encpos, extract this result composition feature
-                results = compose_result_func(search_result)
-                count = search_result['hits']['total']
+                results: list = compose_result_func(search_result)
+                count: int = search_result['hits']['total']
 
                 # print(body, len(results), search['hits']['total'], index)
                 # pprint.pprint(search)
@@ -178,12 +176,15 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func=lambda: 
                         after_key = search_result["aggregations"]["items"]["after_key"]
                     print("aggregations: {0} buckets; after_key: {1}".format(len(buckets), after_key))
                     # pprint.pprint(buckets)
-                    count = search_result["aggregations"]["type_count"]["value"]
+                    total_count = search_result["aggregations"]["total_count"]["value"]
+                    bucket_count = search_result["aggregations"]["bucket_count"]["value"]
+
                     r = {
                         "data": results,
                         "buckets": buckets,
                         "after_key": after_key,
-                        "total-count": count
+                        "total-count": total_count,
+                        "bucket-count": bucket_count
                     }
                 else:
                     r = {

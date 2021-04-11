@@ -6,9 +6,10 @@ import json
 
 from api import create_app
 
-app = None
 clean_tags = re.compile('<.*?>')
 body_tag = re.compile('<body(?:(?:.|\n)*?)>((?:.|\n)*?)</body>')
+
+app = None
 
 
 def remove_html_tags(text):
@@ -51,6 +52,7 @@ def make_cli():
 
     :return: Click groum
     """
+
     @click.group()
     def cli(env='dev'):
         global app
@@ -76,7 +78,7 @@ def make_cli():
                                 }
                             }
                         ]
-                     },
+                    },
                 }
             }
         else:
@@ -88,7 +90,7 @@ def make_cli():
         }
 
         result = app.elasticsearch.search(**config)
-        print("\n", "="*12, " RESULT ", "=" * 12)
+        print("\n", "=" * 12, " RESULT ", "=" * 12)
         pprint.pprint(result)
 
     @click.command("update-conf")
@@ -140,7 +142,7 @@ def make_cli():
                     # brutally try to cast values as integer
                     try:
                         _d[k] = int(_values[i])
-                    except Exception as e:
+                    except (TypeError, ValueError):
                         _d[k] = _values[i]
 
             metadata[_d['id']] = _d
@@ -155,7 +157,7 @@ def make_cli():
             if years == "all":
                 years = "1841-2021"
             start_year, end_year = (int(y) for y in years.split('-'))
-            for year in range(start_year, end_year+1):
+            for year in range(start_year, end_year + 1):
 
                 _ids = [d for d in metadata.keys() if str(year) in d]
                 print(year, _ids)
@@ -163,7 +165,7 @@ def make_cli():
                     response = requests.get(f'{_DTS_URL}/document?id={encpos_id}')
                     # very ugly and wrong and temporary : indexing the whole TEI file
 
-                    #title_text	author_name	author_firstname topic_notBefore topic_notAfter author_gender
+                    # title_text	author_name	author_firstname topic_notBefore topic_notAfter author_gender
                     content = extract_body(response.text)
                     content = remove_html_tags(content)
 
@@ -182,7 +184,7 @@ def make_cli():
         # INDEXATION DES COLLECTIONS
         try:
             _index_name = app.config['COLLECTION_INDEX']
-            #app.elasticsearch.index(index=_index_name, doc_type="_doc", id=encpos_id,  body={})
+            # app.elasticsearch.index(index=_index_name, doc_type="_doc", id=encpos_id,  body={})
         except Exception as e:
             print('Indexation error: ', str(e))
 
@@ -193,6 +195,6 @@ def make_cli():
     return cli
 
 
-cli = make_cli()
+ze_cli = make_cli()
 if __name__ == '__main__':
-    cli()
+    ze_cli()
