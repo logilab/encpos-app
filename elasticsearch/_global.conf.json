@@ -37,6 +37,14 @@
         "char_filter": [
           "html_stripper"
         ]
+      },
+      "keyword": {
+        "tokenizer": "keyword",
+        "stopwords": "_french_",
+        "filter": [
+          "french_elision",
+          "icu_folding"
+        ]
       }
     }
   }
