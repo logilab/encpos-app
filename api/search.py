@@ -192,7 +192,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                             ids_query = {
                                 "query": {
                                     "query_string": {
-                                        "query": f"{groupby_field}:{bucket['key'][groupby_field]}"
+                                        "query": f"{query} AND {groupby_field}:{bucket['key'][groupby_field]}"
                                     }
 
                                 },
