@@ -31,6 +31,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
 
         groupby_field: str = request.args.get("groupby[field]", None)
         groupby_after: str = request.args.get("groupby[after-page]", None)
+        groupby_with_ids: str = request.args.get("groupby[with-ids]", False)
 
         if query is None:
             return Response(status=400)
@@ -107,7 +108,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                                             "field": groupby_field,
                                         },
                                     }
-                                },
+                                }
                             ],
                             "size": page_size
                         },
@@ -161,7 +162,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                 pprint.pprint(body)
                 # perform the search
                 search_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=body)
-
+                #pprint.pprint(search_result['aggregations'])
                 results: list = compose_result_func(search_result)
                 count: int = search_result['hits']['total']
 
@@ -179,8 +180,30 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                     total_count = search_result["aggregations"]["total_count"]["value"]
                     bucket_count = search_result["aggregations"]["bucket_count"]["value"]
 
+                    if groupby_with_ids is not False:
+                        try:
+                            size_limit = int(groupby_with_ids)
+                        except Exception as e:
+                            print(str(e))
+                            print("Size limit reached in aggregation ids fetch:", groupby_with_ids)
+                            size_limit = 10000
+
+                        for bucket in buckets:
+                            ids_query = {
+                                "query": {
+                                    "query_string": {
+                                        "query": f"{groupby_field}:{bucket['key'][groupby_field]}"
+                                    }
+
+                                },
+                                "size": size_limit
+                            }
+                            # print(ids_query)
+                            ids_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=ids_query)
+                            bucket['_ids'] = sorted([h["_id"] for h in ids_result['hits']["hits"]])
+
                     r = {
-                        "data": results,
+                        #"data": results,
                         "buckets": buckets,
                         "after_key": after_key,
                         "total-count": total_count,
