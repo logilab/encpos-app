@@ -110,8 +110,8 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                                     }
                                 }
                             ],
-                            "size": page_size
-                        },
+                            "size": page_size,
+                        }
                     },
                     "total_count": {
                         "cardinality": {
@@ -121,22 +121,22 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                     "bucket_count": {
                         "cardinality": {
                             "field": groupby_field
-                        }
-                    }
+                        },
+                    },
                 }
                 body["size"] = 0
 
                 sort_criteriae.reverse()
-                for crit in sort_criteriae:
-                    for crit_name, crit_order in crit.items():
-                        source = {
-                            crit_name: {
-                                "terms": {
-                                    "field": crit_name,
-                                    **crit_order},
-                            }
-                        }
-                        body["aggregations"]["items"]["composite"]["sources"].insert(0, source)
+                #for crit in sort_criteriae:
+                #    for crit_name, crit_order in crit.items():
+                #        source = {
+                #            crit_name: {
+                #                "terms": {
+                #                    "field": crit_name,
+                #                    **crit_order},
+                #            }
+                #        }
+                #        body["aggregations"]["items"]["composite"]["sources"].insert(0, source)
 
                 if groupby_after is not None:
                     sources_keys = [list(s.keys())[0] for s in body["aggregations"]["items"]["composite"]["sources"]]
