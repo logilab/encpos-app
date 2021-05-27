@@ -31,7 +31,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
 
         groupby_field: str = request.args.get("groupby[field]", None)
         groupby_after: str = request.args.get("groupby[after-page]", None)
-        groupby_with_ids: str = request.args.get("groupby[with-ids]", False)
+        groupby_with_ids: int = request.args.get("groupby[with-ids]", 10000) or 10000
 
         if query is None:
             return Response(status=400)
@@ -180,7 +180,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                     total_count = search_result["aggregations"]["total_count"]["value"]
                     bucket_count = search_result["aggregations"]["bucket_count"]["value"]
 
-                    if groupby_with_ids is not False:
+                    if groupby_with_ids is not False and len(buckets) > 0:
                         try:
                             size_limit = int(groupby_with_ids)
                         except Exception as e:
@@ -192,13 +192,12 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                             ids_query = {
                                 "query": {
                                     "query_string": {
-                                        "query": f"{query} AND {groupby_field}:{bucket['key'][groupby_field]}"
+                                        "query": f"({query}) AND {groupby_field}:{bucket['key'][groupby_field]}"
                                     }
 
                                 },
                                 "size": size_limit
                             }
-                            # print(ids_query)
                             ids_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=ids_query)
                             bucket['_ids'] = sorted([h["_id"] for h in ids_result['hits']["hits"]])
 
