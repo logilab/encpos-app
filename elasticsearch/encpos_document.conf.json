@@ -11,11 +11,25 @@
           "properties": {
             "author_firstname": {
               "type": "text",
-              "fielddata": true
+              "fielddata": true,
+              "fields" : {
+                "keyword": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "fielddata": "true"
+                }
+              }
             },
             "author_name": {
               "type": "text",
-              "fielddata": true
+              "fielddata": true,
+              "fields": {
+                "keyword": {
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "fielddata": "true"
+                }
+              }
             }
           }
         }
