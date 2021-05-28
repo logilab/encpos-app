@@ -9,7 +9,14 @@
         },
         "metadata": {
           "properties": {
-          
+            "author_firstname": {
+              "type": "text",
+              "fielddata": true
+            },
+            "author_name": {
+              "type": "text",
+              "fielddata": true
+            }
           }
         }
       }

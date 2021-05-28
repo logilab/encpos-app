@@ -194,7 +194,6 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                                     "query_string": {
                                         "query": f"({query}) AND {groupby_field}:{bucket['key'][groupby_field]}"
                                     }
-
                                 },
                                 "size": size_limit
                             }
