@@ -155,7 +155,7 @@ def make_cli(env='dev'):
         try:
             _index_name = app.config['DOCUMENT_INDEX']
             if years == "all":
-                years = "1841-2021"
+                years = app.config['ALL_YEARS']
             start_year, end_year = (int(y) for y in years.split('-'))
             for year in range(start_year, end_year + 1):
 
