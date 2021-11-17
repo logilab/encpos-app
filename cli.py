@@ -1,5 +1,7 @@
 import pprint
 import re
+import sys
+
 import requests
 import click
 import json
@@ -47,14 +49,14 @@ def load_elastic_conf(index_name, rebuild=False):
         raise e
 
 
-def make_cli():
+def make_cli(env='dev'):
     """ Creates a Command Line Interface for everydays tasks
 
     :return: Click groum
     """
 
     @click.group()
-    def cli(env='dev'):
+    def cli():
         global app
         app = create_app(env)
         app.all_indexes = f"{app.config['DOCUMENT_INDEX']},{app.config['COLLECTION_INDEX']}"
@@ -195,6 +197,7 @@ def make_cli():
     return cli
 
 
-ze_cli = make_cli()
 if __name__ == '__main__':
-    ze_cli()
+    ze_cli = make_cli('prod')
+else:
+    ze_cli = make_cli()
