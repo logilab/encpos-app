@@ -21,6 +21,8 @@ class Config(object):
     DOCUMENT_INDEX = parse_var_env('DOCUMENT_INDEX')
     COLLECTION_INDEX = parse_var_env('COLLECTION_INDEX')
 
+    ALL_YEARS = parse_var_env('ALL_YEARS')
+
     DTS_URL = parse_var_env('DTS_URL')
     METADATA_FILE_URL = parse_var_env('METADATA_FILE_URL')
     METADATA_FILE_INDEXABLE_COLUMNS = parse_var_env('METADATA_FILE_INDEXABLE_COLUMNS')
