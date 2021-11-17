@@ -1,7 +1,5 @@
 import pprint
 import re
-import sys
-
 import requests
 import click
 import json
@@ -196,8 +194,3 @@ def make_cli(env='dev'):
     cli.add_command(search)
     return cli
 
-
-if __name__ == '__main__':
-    ze_cli = make_cli('prod')
-else:
-    ze_cli = make_cli()
