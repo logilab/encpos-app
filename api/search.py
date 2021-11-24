@@ -33,6 +33,9 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
         groupby_after: str = request.args.get("groupby[after-page]", None)
         groupby_with_ids: int = request.args.get("groupby[with-ids]", 10000) or 10000
 
+        no_highlight = request.args.get("no-highlight", False)
+        no_highlight = type(no_highlight) == str
+
         if query is None:
             return Response(status=400)
 
@@ -77,14 +80,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                         ]
                     },
                 },
-                "highlight": {
-                    "type": "fvh",
-                    "fields": {
-                        "content": {}
-                    },
-                    "number_of_fragments": 100,
-                    "options": {"return_offsets": True}
-                },
+
                 "aggregations": {
 
                 },
@@ -93,6 +89,16 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                     *sort_criteriae
                 ]
             }
+
+            if not no_highlight:
+                body["highlight"] = {
+                    "type": "fvh",
+                    "fields": {
+                        "content": {}
+                    },
+                    "number_of_fragments": 100,
+                    "options": {"return_offsets": False}
+                }
 
             if ranges:
                 body["query"]["bool"]['must'].extend([{"range": r} for r in ranges])
