@@ -160,12 +160,11 @@ def make_cli(env='dev'):
             for year in range(start_year, end_year + 1):
 
                 _ids = [d for d in metadata.keys() if str(year) in d and "_PREV" not in d and "_NEXT" not in d]
-                print(year, _ids)
+
                 for encpos_id in _ids:
                     response = requests.get(f'{_DTS_URL}/document?id={encpos_id}')
-                    # very ugly and wrong and temporary : indexing the whole TEI file
+                    print(encpos_id, response.status_code)
 
-                    # title_text	author_name	author_firstname topic_notBefore topic_notAfter author_gender
                     content = extract_body(response.text)
                     content = remove_html_tags(content)
 

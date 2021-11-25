@@ -36,8 +36,8 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
         no_highlight = request.args.get("no-highlight", False)
         no_highlight = type(no_highlight) == str
 
-        if query is None:
-            return Response(status=400)
+        #if query is None:
+        #    return Response(status=400)
 
         # if request has pagination parameters
         # add links to the top-level object
@@ -71,12 +71,7 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                 "query": {
                     "bool": {
                         "must": [
-                            {
-                                "query_string": {
-                                    "query": query,
-                                    "default_operator": "AND"
-                                }
-                            }
+
                         ]
                     },
                 },
@@ -89,7 +84,15 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                     *sort_criteriae
                 ]
             }
-
+            if query:
+                body["query"]["bool"]["must"].append(
+                    {
+                        "query_string": {
+                            "query": query,
+                            "default_operator": "AND"
+                        }
+                    }
+                )
             if not no_highlight:
                 body["highlight"] = {
                     "type": "fvh",
