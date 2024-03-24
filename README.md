@@ -1,13 +1,14 @@
 # encpos-app
 
-Run ```python flask_app.py``` to launch the api server
+Run `python flask_app.py` to launch the api server
 
 And use the following for offline commands:
+
 ```bash
 
-> python cli.py --help
+> python manage.py --help
 
-Usage: cli.py [OPTIONS] COMMAND [ARGS]...
+Usage: manage.py [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --help  Show this message and exit.

@@ -122,11 +122,6 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                             "size": page_size,
                         }
                     },
-                    "total_count": {
-                        "cardinality": {
-                            "field": "_id"
-                        }
-                    },
                     "bucket_count": {
                         "cardinality": {
                             "field": groupby_field
@@ -170,10 +165,10 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
 
                 pprint.pprint(body)
                 # perform the search
-                search_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=body)
+                search_result = current_app.elasticsearch.search(index=index, body=body)
                 #pprint.pprint(search_result['aggregations'])
                 results: list = compose_result_func(search_result)
-                count: int = search_result['hits']['total']
+                count: int = search_result['hits']['total']['value']
 
                 # print(body, len(results), search['hits']['total'], index)
                 # pprint.pprint(search)
@@ -186,7 +181,6 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                         after_key = search_result["aggregations"]["items"]["after_key"]
                     print("aggregations: {0} buckets; after_key: {1}".format(len(buckets), after_key))
                     # pprint.pprint(buckets)
-                    total_count = search_result["aggregations"]["total_count"]["value"]
                     bucket_count = search_result["aggregations"]["bucket_count"]["value"]
 
                     if groupby_with_ids is not False and len(buckets) > 0:
@@ -206,14 +200,14 @@ def register_search_endpoint(bp, api_version="1.0", compose_result_func: Callabl
                                 },
                                 "size": size_limit
                             }
-                            ids_result = current_app.elasticsearch.search(index=index, doc_type="_doc", body=ids_query)
+                            ids_result = current_app.elasticsearch.search(index=index, body=ids_query)
                             bucket['_ids'] = sorted([h["_id"] for h in ids_result['hits']["hits"]])
 
                     r = {
                         #"data": results,
                         "buckets": buckets,
                         "after_key": after_key,
-                        "total-count": total_count,
+                        "total-count": count,
                         "bucket-count": bucket_count
                     }
                 else:

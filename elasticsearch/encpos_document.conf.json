@@ -1,34 +1,32 @@
 {
   "mappings": {
-    "_doc": {
-      "properties": {
-        "content": {
-          "type": "text",
-          "analyzer": "folding",
-          "term_vector": "with_positions_offsets"
-        },
-        "metadata": {
-          "properties": {
-            "author_firstname": {
-              "type": "text",
-              "fielddata": true,
-              "fields" : {
-                "keyword": {
-                  "type": "text",
-                  "analyzer": "keyword",
-                  "fielddata": "true"
-                }
+    "properties": {
+      "content": {
+        "type": "text",
+        "analyzer": "folding",
+        "term_vector": "with_positions_offsets"
+      },
+      "metadata": {
+        "properties": {
+          "author_firstname": {
+            "type": "text",
+            "fielddata": true,
+            "fields": {
+              "keyword": {
+                "type": "text",
+                "analyzer": "keyword",
+                "fielddata": "true"
               }
-            },
-            "author_name": {
-              "type": "text",
-              "fielddata": true,
-              "fields": {
-                "keyword": {
-                  "type": "text",
-                  "analyzer": "keyword",
-                  "fielddata": "true"
-                }
+            }
+          },
+          "author_name": {
+            "type": "text",
+            "fielddata": true,
+            "fields": {
+              "keyword": {
+                "type": "text",
+                "analyzer": "keyword",
+                "fielddata": "true"
               }
             }
           }
