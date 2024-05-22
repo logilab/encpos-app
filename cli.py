@@ -1,8 +1,9 @@
+import json
 import pprint
 import re
-import requests
+
 import click
-import json
+import requests
 
 from api import create_app
 
