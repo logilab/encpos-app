@@ -10,7 +10,7 @@ in a local folder dedicated to the project
   ```
 
 - Set up the virtual environment:  
-in the app folder (`cd path/to/encpos_app`)
+in the app folder (`cd path/to/encpos-app`)
   ```bash
   python3 -m venv venv
   source venv/bin/activate
