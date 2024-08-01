@@ -10,23 +10,19 @@
         "properties": {
           "author_firstname": {
             "type": "text",
-            "fielddata": true,
             "fields": {
               "keyword": {
-                "type": "text",
-                "analyzer": "keyword",
-                "fielddata": "true"
+                "type": "keyword",
+                "normalizer": "keyword"
               }
             }
           },
           "author_name": {
             "type": "text",
-            "fielddata": true,
             "fields": {
               "keyword": {
-                "type": "text",
-                "analyzer": "keyword",
-                "fielddata": "true"
+                "type": "keyword",
+                "normalizer": "keyword"
               }
             }
           }
